@@ -2,17 +2,23 @@
 
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+
+if __name__ == "__main__":
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
 import typer
 
-from .commands.attack import attack_app
-from .commands.crack import crack_app
-from .commands.decode import decode_command
-from .commands.edit import edit_command
-from .commands.fuzz import fuzz_app
-from .commands.keys import keys_app
-from .commands.resign import resign_command
-from .commands.validate import validate_command
-from .commands.verify import verify_command
+from yajt.cli.commands.attack import attack_app
+from yajt.cli.commands.crack import crack_app
+from yajt.cli.commands.decode import decode_command
+from yajt.cli.commands.edit import edit_command
+from yajt.cli.commands.fuzz import fuzz_app
+from yajt.cli.commands.keys import keys_app
+from yajt.cli.commands.resign import resign_command
+from yajt.cli.commands.validate import validate_command
+from yajt.cli.commands.verify import verify_command
 
 app = typer.Typer(help="YAJT - Yet Another JWT Tool")
 
@@ -29,3 +35,7 @@ app.add_typer(crack_app, name="crack")
 
 def main() -> None:
     app()
+
+
+if __name__ == "__main__":
+    main()
