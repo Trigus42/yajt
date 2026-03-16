@@ -11,7 +11,12 @@ import typer
 from ...integrations.hashcat_jobs import export_hashcat_job
 from ...integrations.hashcat_parse import parse_hashcat_potfile
 
-crack_app = typer.Typer(help="hashcat job generation and parsing")
+crack_app = typer.Typer(
+    help="Export hashcat cracking jobs and parse potfiles.",
+    no_args_is_help=True,
+    context_settings={"help_option_names": ["-h", "--help"]},
+    rich_markup_mode="rich",
+)
 
 
 def _dump_json(value: Any, pretty: bool) -> None:
@@ -21,16 +26,16 @@ def _dump_json(value: Any, pretty: bool) -> None:
         typer.echo(json.dumps(value, separators=(",", ":"), sort_keys=True, ensure_ascii=True))
 
 
-@crack_app.command("export")
+@crack_app.command("export", help="Export a hashcat cracking job for HMAC-signed JWTs.")
 def export_command(
-    token: str = typer.Argument(..., help="JWT in compact form"),
-    output: Path = typer.Option(..., "--output", "-o", help="Output hash file"),
-    mode: int = typer.Option(16500, "--mode", help="Hashcat mode"),
-    wordlist: str | None = typer.Option(None, "--wordlist", help="Wordlist path"),
-    rules: str | None = typer.Option(None, "--rules", help="Rules file"),
-    mask: str | None = typer.Option(None, "--mask", help="Mask pattern"),
-    potfile: str | None = typer.Option(None, "--potfile", help="Potfile path"),
-    pretty: bool = typer.Option(True, "--pretty/--compact", help="Pretty JSON output"),
+    token: str = typer.Argument(..., help="JWT in compact serialization form."),
+    output: Path = typer.Option(..., "--output", "-o", help="Output hash file path."),
+    mode: int = typer.Option(16500, "--mode", "-m", help="Hashcat attack mode."),
+    wordlist: str | None = typer.Option(None, "--wordlist", "-w", help="Path to wordlist file."),
+    rules: str | None = typer.Option(None, "--rules", "-r", help="Path to hashcat rules file."),
+    mask: str | None = typer.Option(None, "--mask", help="Mask pattern for brute-force."),
+    potfile: str | None = typer.Option(None, "--potfile", help="Path to potfile."),
+    pretty: bool = typer.Option(True, "--pretty/--compact", help="Pretty-print JSON output."),
 ) -> None:
     job = export_hashcat_job(
         token,
@@ -44,10 +49,10 @@ def export_command(
     _dump_json(job.to_dict(), pretty)
 
 
-@crack_app.command("parse")
+@crack_app.command("parse", help="Parse a hashcat potfile and extract recovered secrets.")
 def parse_command(
-    potfile: Path = typer.Argument(..., help="Hashcat potfile"),
-    pretty: bool = typer.Option(True, "--pretty/--compact", help="Pretty JSON output"),
+    potfile: Path = typer.Argument(..., help="Path to hashcat potfile."),
+    pretty: bool = typer.Option(True, "--pretty/--compact", help="Pretty-print JSON output."),
 ) -> None:
     entries = parse_hashcat_potfile(potfile)
     _dump_json({"entries": entries}, pretty)

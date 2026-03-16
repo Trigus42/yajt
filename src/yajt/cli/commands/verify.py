@@ -43,24 +43,24 @@ def _dump_json(value: dict[str, Any], pretty: bool) -> None:
 
 
 def verify_command(
-    token: str = typer.Argument(..., help="JWT in compact form"),
-    jwk: str | None = typer.Option(None, "--jwk", help="JWK JSON string"),
-    jwk_file: Path | None = typer.Option(None, "--jwk-file", help="JWK JSON file"),
-    jwks: str | None = typer.Option(None, "--jwks", help="JWKS JSON string"),
-    jwks_file: Path | None = typer.Option(None, "--jwks-file", help="JWKS JSON file"),
-    jwks_url: str | None = typer.Option(None, "--jwks-url", help="JWKS URL"),
-    jwks_ttl: int = typer.Option(300, "--jwks-ttl", help="JWKS cache TTL seconds"),
-    jwks_timeout: float = typer.Option(5.0, "--jwks-timeout", help="JWKS fetch timeout"),
-    pem_file: Path | None = typer.Option(None, "--pem", help="PEM key file"),
-    kid: str | None = typer.Option(None, "--kid", help="Key ID to select"),
-    issuer: str | None = typer.Option(None, "--issuer", "-i", help="Expected issuer"),
+    token: str = typer.Argument(..., help="JWT in compact serialization form."),
+    jwk: str | None = typer.Option(None, "--jwk", help="JWK as a JSON string."),
+    jwk_file: Path | None = typer.Option(None, "--jwk-file", help="Path to JWK JSON file."),
+    jwks: str | None = typer.Option(None, "--jwks", help="JWKS as a JSON string."),
+    jwks_file: Path | None = typer.Option(None, "--jwks-file", help="Path to JWKS JSON file."),
+    jwks_url: str | None = typer.Option(None, "--jwks-url", help="URL to fetch JWKS from."),
+    jwks_ttl: int = typer.Option(300, "--jwks-ttl", help="JWKS cache TTL in seconds."),
+    jwks_timeout: float = typer.Option(5.0, "--jwks-timeout", help="JWKS fetch timeout in seconds."),
+    pem_file: Path | None = typer.Option(None, "--pem", "-p", help="Path to PEM key file."),
+    kid: str | None = typer.Option(None, "--kid", "-k", help="Key ID to select from JWKS."),
+    issuer: str | None = typer.Option(None, "--issuer", "-i", help="Expected issuer claim."),
     audience: list[str] | None = typer.Option(
-        None, "--audience", "-a", help="Expected audience (repeatable)"
+        None, "--audience", "-a", help="Expected audience (repeatable)."
     ),
-    skew: int = typer.Option(0, "--skew", help="Clock skew in seconds"),
-    claims: bool = typer.Option(False, "--claims", help="Validate registered claims"),
-    logbook: str | None = typer.Option(None, "--logbook", help="JSONL logbook path"),
-    pretty: bool = typer.Option(True, "--pretty/--compact", help="Pretty JSON output"),
+    skew: int = typer.Option(0, "--skew", "-s", help="Clock skew tolerance in seconds."),
+    claims: bool = typer.Option(False, "--claims", "-c", help="Also validate registered claims (exp, nbf, iat)."),
+    logbook: str | None = typer.Option(None, "--logbook", "-l", help="Path to JSONL logbook file."),
+    pretty: bool = typer.Option(True, "--pretty/--compact", help="Pretty-print JSON output."),
 ) -> None:
     key = _load_jwk(jwk, jwk_file, pem_file)
     jwks_set = _load_jwks(jwks, jwks_file)

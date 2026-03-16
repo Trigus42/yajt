@@ -14,7 +14,12 @@ from ...keys.jwk import jwk_from_json, jwk_from_pem, jwk_to_public
 from ...keys.jwks_cache import jwks_from_json, jwks_select_key
 from ...models.keys import KeyUse
 
-keys_app = typer.Typer(help="Key and JWK utilities")
+keys_app = typer.Typer(
+    help="Generate keys, convert PEM to JWK, and select from JWKS.",
+    no_args_is_help=True,
+    context_settings={"help_option_names": ["-h", "--help"]},
+    rich_markup_mode="rich",
+)
 
 
 def _dump_json(value: Mapping[str, Any], pretty: bool) -> None:
@@ -53,41 +58,41 @@ def _export_key(key: JWK, public_only: bool) -> Mapping[str, Any]:
     return key.export(as_dict=True)
 
 
-@keys_app.command("generate-rsa")
+@keys_app.command("generate-rsa", help="Generate an RSA key pair and output as JWK.")
 def generate_rsa_command(
-    bits: int = typer.Option(2048, "--bits", help="RSA key size in bits"),
-    kid: str | None = typer.Option(None, "--kid", help="Key ID"),
-    use: str | None = typer.Option(None, "--use", help="Key use: sig or enc"),
-    alg: str | None = typer.Option(None, "--alg", help="Algorithm hint"),
-    public: bool = typer.Option(False, "--public", help="Export public key only"),
-    pretty: bool = typer.Option(True, "--pretty/--compact", help="Pretty JSON output"),
+    bits: int = typer.Option(2048, "--bits", "-b", help="RSA key size in bits."),
+    kid: str | None = typer.Option(None, "--kid", "-k", help="Key ID to set on the JWK."),
+    use: str | None = typer.Option(None, "--use", "-u", help="Key use: sig or enc."),
+    alg: str | None = typer.Option(None, "--alg", help="Algorithm hint (e.g. RS256)."),
+    public: bool = typer.Option(False, "--public", help="Export public key only."),
+    pretty: bool = typer.Option(True, "--pretty/--compact", help="Pretty-print JSON output."),
 ) -> None:
     key = generate_rsa_keypair(bits=bits, kid=kid, use=_parse_use(use), alg=alg)
     _dump_json(_export_key(key, public), pretty)
 
 
-@keys_app.command("generate-ec")
+@keys_app.command("generate-ec", help="Generate an EC key pair and output as JWK.")
 def generate_ec_command(
-    curve: str = typer.Option("P-256", "--curve", help="EC curve"),
-    kid: str | None = typer.Option(None, "--kid", help="Key ID"),
-    use: str | None = typer.Option(None, "--use", help="Key use: sig or enc"),
-    alg: str | None = typer.Option(None, "--alg", help="Algorithm hint"),
-    public: bool = typer.Option(False, "--public", help="Export public key only"),
-    pretty: bool = typer.Option(True, "--pretty/--compact", help="Pretty JSON output"),
+    curve: str = typer.Option("P-256", "--curve", "-C", help="EC curve name (P-256, P-384, P-521)."),
+    kid: str | None = typer.Option(None, "--kid", "-k", help="Key ID to set on the JWK."),
+    use: str | None = typer.Option(None, "--use", "-u", help="Key use: sig or enc."),
+    alg: str | None = typer.Option(None, "--alg", help="Algorithm hint (e.g. ES256)."),
+    public: bool = typer.Option(False, "--public", help="Export public key only."),
+    pretty: bool = typer.Option(True, "--pretty/--compact", help="Pretty-print JSON output."),
 ) -> None:
     key = generate_ec_keypair(curve=curve, kid=kid, use=_parse_use(use), alg=alg)
     _dump_json(_export_key(key, public), pretty)
 
 
-@keys_app.command("from-pem")
+@keys_app.command("from-pem", help="Import a PEM key file and output as JWK.")
 def from_pem_command(
-    pem_file: Path = typer.Argument(..., help="Path to PEM file"),
-    password: str | None = typer.Option(None, "--password", help="PEM password"),
-    kid: str | None = typer.Option(None, "--kid", help="Key ID"),
-    use: str | None = typer.Option(None, "--use", help="Key use: sig or enc"),
-    alg: str | None = typer.Option(None, "--alg", help="Algorithm hint"),
-    public: bool = typer.Option(False, "--public", help="Export public key only"),
-    pretty: bool = typer.Option(True, "--pretty/--compact", help="Pretty JSON output"),
+    pem_file: Path = typer.Argument(..., help="Path to PEM key file."),
+    password: str | None = typer.Option(None, "--password", help="Password for encrypted PEM."),
+    kid: str | None = typer.Option(None, "--kid", "-k", help="Key ID to set on the JWK."),
+    use: str | None = typer.Option(None, "--use", "-u", help="Key use: sig or enc."),
+    alg: str | None = typer.Option(None, "--alg", help="Algorithm hint."),
+    public: bool = typer.Option(False, "--public", help="Export public key only."),
+    pretty: bool = typer.Option(True, "--pretty/--compact", help="Pretty-print JSON output."),
 ) -> None:
     pem_bytes = pem_file.read_bytes()
     password_bytes = password.encode("utf-8") if password else None
@@ -95,11 +100,11 @@ def from_pem_command(
     _dump_json(_export_key(key, public), pretty)
 
 
-@keys_app.command("public")
+@keys_app.command("public", help="Extract the public key from a JWK.")
 def public_command(
-    jwk: str | None = typer.Option(None, "--jwk", help="JWK JSON string"),
-    file: Path | None = typer.Option(None, "--file", help="Path to JWK JSON file"),
-    pretty: bool = typer.Option(True, "--pretty/--compact", help="Pretty JSON output"),
+    jwk: str | None = typer.Option(None, "--jwk", help="JWK as a JSON string."),
+    file: Path | None = typer.Option(None, "--file", "-f", help="Path to JWK JSON file."),
+    pretty: bool = typer.Option(True, "--pretty/--compact", help="Pretty-print JSON output."),
 ) -> None:
     data = _load_json_input(jwk, file)
     key = jwk_from_json(data)
@@ -107,12 +112,12 @@ def public_command(
     _dump_json(public.export_public(as_dict=True), pretty)
 
 
-@keys_app.command("jwks-select")
+@keys_app.command("jwks-select", help="Select a key from a JWKS by key ID.")
 def jwks_select_command(
-    jwks: str | None = typer.Option(None, "--jwks", help="JWKS JSON string"),
-    file: Path | None = typer.Option(None, "--file", help="Path to JWKS JSON file"),
-    kid: str | None = typer.Option(None, "--kid", help="Key ID to select"),
-    pretty: bool = typer.Option(True, "--pretty/--compact", help="Pretty JSON output"),
+    jwks: str | None = typer.Option(None, "--jwks", help="JWKS as a JSON string."),
+    file: Path | None = typer.Option(None, "--file", "-f", help="Path to JWKS JSON file."),
+    kid: str | None = typer.Option(None, "--kid", "-k", help="Key ID to select from set."),
+    pretty: bool = typer.Option(True, "--pretty/--compact", help="Pretty-print JSON output."),
 ) -> None:
     data = _load_json_input(jwks, file)
     jwks_set = jwks_from_json(data)

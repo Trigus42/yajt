@@ -29,7 +29,12 @@ from ...workflows.claim_injection import claim_injection_value_variants, claim_i
 from ...workflows.error_forcing import malformed_variants
 from ...workflows.scan_playbooks import attack_variants, basic_playbook
 
-attack_app = typer.Typer(help="Attack sequences", invoke_without_command=True)
+attack_app = typer.Typer(
+    help="Generate attack variant tokens for JWT security testing.",
+    invoke_without_command=True,
+    context_settings={"help_option_names": ["-h", "--help"]},
+    rich_markup_mode="rich",
+)
 
 
 def _dump_json(value: Any, pretty: bool) -> None:
@@ -112,13 +117,13 @@ def _parse_inject_claim(entries: list[str]) -> tuple[dict[str, str], dict[str, l
 def attack_command(
     ctx: typer.Context,
     token: str | None = typer.Option(None, "-t", "--token", help=AttackOptionHelp.TOKEN.value),
-    malformed: bool = typer.Option(False, "--malformed", help=AttackOptionHelp.MALFORMED.value),
+    malformed: bool = typer.Option(False, "--malformed", "-m", help=AttackOptionHelp.MALFORMED.value),
     inject_claim: list[str] = typer.Option(
         [],
         "--inject-claim",
         help=AttackOptionHelp.INJECT_CLAIM.value,
     ),
-    logbook: str | None = typer.Option(None, "--logbook", help=AttackOptionHelp.LOGBOOK.value),
+    logbook: str | None = typer.Option(None, "--logbook", "-l", help=AttackOptionHelp.LOGBOOK.value),
     pretty: bool = typer.Option(True, "--pretty/--compact", help=AttackOptionHelp.PRETTY.value),
     methods: list[str] = typer.Argument(None),
 ) -> None:

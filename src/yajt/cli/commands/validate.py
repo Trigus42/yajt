@@ -35,14 +35,14 @@ def _result_to_dict(result: ValidationResult) -> dict[str, Any]:
 
 
 def validate_command(
-    token: str = typer.Argument(..., help="JWT in compact form"),
-    issuer: str | None = typer.Option(None, "--issuer", "-i", help="Expected issuer"),
+    token: str = typer.Argument(..., help="JWT in compact serialization form."),
+    issuer: str | None = typer.Option(None, "--issuer", "-i", help="Expected issuer claim."),
     audience: list[str] | None = typer.Option(
-        None, "--audience", "-a", help="Expected audience (repeatable)"
+        None, "--audience", "-a", help="Expected audience (repeatable)."
     ),
-    skew: int = typer.Option(0, "--skew", help="Clock skew in seconds"),
-    claims: bool = typer.Option(False, "--claims", help="Validate registered claims"),
-    pretty: bool = typer.Option(True, "--pretty/--compact", help="Pretty JSON output"),
+    skew: int = typer.Option(0, "--skew", "-s", help="Clock skew tolerance in seconds."),
+    claims: bool = typer.Option(False, "--claims", "-c", help="Also validate registered claims (exp, nbf, iat)."),
+    pretty: bool = typer.Option(True, "--pretty/--compact", help="Pretty-print JSON output."),
 ) -> None:
     structure = validate_structure(token)
     results = [structure]

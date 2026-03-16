@@ -34,11 +34,11 @@ def _parse_payload_input(value: str) -> Any:
 
 
 def edit_command(
-    token: str = typer.Argument(..., help="JWT in compact form"),
-    header: str | None = typer.Option(None, "--header", help="Header JSON string"),
-    payload: str | None = typer.Option(None, "--payload", help="Payload JSON/string"),
+    token: str = typer.Argument(..., help="JWT in compact serialization form."),
+    header: str | None = typer.Option(None, "--header", "-H", help="New header as JSON string."),
+    payload: str | None = typer.Option(None, "--payload", "-P", help="New payload as JSON, plain string, or b64:... encoded."),
     keep_signature: bool = typer.Option(
-        False, "--keep-signature", help="Keep original signature"
+        False, "--keep-signature", "-K", help="Keep the original signature intact."
     ),
 ) -> None:
     parsed = parse_compact_jwt(token)

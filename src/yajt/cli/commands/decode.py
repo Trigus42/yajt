@@ -20,8 +20,8 @@ def _jsonable(value: Any) -> Any:
 
 
 def decode_command(
-    token: str = typer.Argument(..., help="JWT in compact form"),
-    pretty: bool = typer.Option(True, "--pretty/--compact", help="Pretty JSON output"),
+    token: str = typer.Argument(..., help="JWT in compact serialization form."),
+    pretty: bool = typer.Option(True, "--pretty/--compact", help="Pretty-print JSON output."),
 ) -> None:
     parsed = parse_compact_jwt(token)
     payload = _jsonable(parsed.payload)

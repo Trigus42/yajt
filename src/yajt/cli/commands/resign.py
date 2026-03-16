@@ -24,12 +24,12 @@ def _load_jwk(jwk: str | None, jwk_file: Path | None, pem_file: Path | None) -> 
 
 
 def resign_command(
-    token: str = typer.Argument(..., help="JWT in compact form"),
-    alg: str = typer.Option(..., "--alg", help="Signing algorithm"),
-    jwk: str | None = typer.Option(None, "--jwk", help="JWK JSON string"),
-    jwk_file: Path | None = typer.Option(None, "--jwk-file", help="JWK JSON file"),
-    pem_file: Path | None = typer.Option(None, "--pem", help="PEM key file"),
-    logbook: str | None = typer.Option(None, "--logbook", help="JSONL logbook path"),
+    token: str = typer.Argument(..., help="JWT in compact serialization form."),
+    alg: str = typer.Option(..., "--alg", "-A", help="Target signing algorithm (e.g. HS256, RS256)."),
+    jwk: str | None = typer.Option(None, "--jwk", help="JWK as a JSON string."),
+    jwk_file: Path | None = typer.Option(None, "--jwk-file", help="Path to JWK JSON file."),
+    pem_file: Path | None = typer.Option(None, "--pem", "-p", help="Path to PEM key file."),
+    logbook: str | None = typer.Option(None, "--logbook", "-l", help="Path to JSONL logbook file."),
 ) -> None:
     key = _load_jwk(jwk, jwk_file, pem_file)
     resigned = resign_token_string(token, key, alg)

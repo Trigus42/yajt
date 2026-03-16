@@ -17,7 +17,12 @@ from ...integrations.ffuf_jobs import (
 )
 from ...integrations.ffuf_parse import parse_ffuf_csv, parse_ffuf_json
 
-fuzz_app = typer.Typer(help="ffuf job generation and parsing")
+fuzz_app = typer.Typer(
+    help="Export ffuf fuzzing jobs and parse results.",
+    no_args_is_help=True,
+    context_settings={"help_option_names": ["-h", "--help"]},
+    rich_markup_mode="rich",
+)
 
 
 def _dump_json(value: Any, pretty: bool) -> None:
@@ -27,18 +32,18 @@ def _dump_json(value: Any, pretty: bool) -> None:
         typer.echo(json.dumps(value, separators=(",", ":"), sort_keys=True, ensure_ascii=True))
 
 
-@fuzz_app.command("export")
+@fuzz_app.command("export", help="Generate an ffuf fuzzing job configuration.")
 def export_command(
-    url: str = typer.Argument(..., help="Target URL"),
-    wordlist: str = typer.Option(..., "--wordlist", "-w", help="Wordlist path"),
+    url: str = typer.Argument(..., help="Target URL to fuzz."),
+    wordlist: str = typer.Option(..., "--wordlist", "-w", help="Path to wordlist file."),
     mode: str = typer.Option(
-        "header", "--mode", help="Injection mode: header, cookie, query, body"
+        "header", "--mode", "-m", help="Injection mode: header, cookie, query, or body."
     ),
-    name: str = typer.Option(..., "--name", help="Header/cookie/param name"),
-    output: Path = typer.Option(..., "--output", "-o", help="Output JSON file"),
-    method: str = typer.Option("GET", "--method", help="HTTP method"),
-    proxy: str | None = typer.Option(None, "--proxy", help="Proxy URL"),
-    rate: int | None = typer.Option(None, "--rate", help="Request rate"),
+    name: str = typer.Option(..., "--name", "-n", help="Header, cookie, or parameter name."),
+    output: Path = typer.Option(..., "--output", "-o", help="Output JSON file path."),
+    method: str = typer.Option("GET", "--method", help="HTTP method to use."),
+    proxy: str | None = typer.Option(None, "--proxy", help="Proxy URL (e.g. http://127.0.0.1:8080)."),
+    rate: int | None = typer.Option(None, "--rate", "-r", help="Maximum request rate per second."),
 ) -> None:
     mode_value = mode.lower()
     if mode_value == "header":
@@ -55,11 +60,11 @@ def export_command(
     export_ffuf_job(job, output)
 
 
-@fuzz_app.command("parse")
+@fuzz_app.command("parse", help="Parse ffuf JSON or CSV output into structured results.")
 def parse_command(
-    input_file: Path = typer.Argument(..., help="ffuf JSON/CSV output"),
-    format: str = typer.Option("json", "--format", help="json or csv"),
-    pretty: bool = typer.Option(True, "--pretty/--compact", help="Pretty JSON output"),
+    input_file: Path = typer.Argument(..., help="Path to ffuf JSON or CSV output file."),
+    format: str = typer.Option("json", "--format", "-f", help="Input format: json or csv."),
+    pretty: bool = typer.Option(True, "--pretty/--compact", help="Pretty-print JSON output."),
 ) -> None:
     format_value = format.lower()
     if format_value == "json":
