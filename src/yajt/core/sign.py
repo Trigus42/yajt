@@ -18,15 +18,19 @@ def sign_compact_jws(
     payload: Any,
     key: JWK,
     alg: str,
+    *,
+    sort_keys: bool = False,
 ) -> str:
     protected = dict(header)
     protected.setdefault("alg", alg)
     protected_json = json.dumps(protected, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
 
-    signer = jws.JWS(payload=_payload_to_bytes(payload))
+    signer = jws.JWS(payload=_payload_to_bytes(payload, sort_keys=sort_keys))
     signer.add_signature(key, protected=protected_json)
     return signer.serialize(compact=True)
 
 
-def resign_token(token: JwtToken, key: JWK, alg: str) -> str:
-    return sign_compact_jws(token.header, token.payload, key, alg)
+def resign_token(
+    token: JwtToken, key: JWK, alg: str, *, sort_keys: bool = False
+) -> str:
+    return sign_compact_jws(token.header, token.payload, key, alg, sort_keys=sort_keys)

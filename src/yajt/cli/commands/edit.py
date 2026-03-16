@@ -33,23 +33,35 @@ def _parse_payload_input(value: str) -> Any:
         return value
 
 
+_DEFAULT_HEADER = '{"alg":"HS256","typ":"JWT"}'
+_DEFAULT_PAYLOAD = "{}"
+
+
 def edit_command(
-    token: str = typer.Argument(..., help="JWT in compact serialization form."),
+    token: str | None = typer.Argument(None, help="JWT in compact serialization form. Omit to start from scratch."),
     header: str | None = typer.Option(None, "--header", "-H", help="New header as JSON string."),
     payload: str | None = typer.Option(None, "--payload", "-P", help="New payload as JSON, plain string, or b64:... encoded."),
     keep_signature: bool = typer.Option(
         False, "--keep-signature", "-K", help="Keep the original signature intact."
     ),
+    sort_keys: bool = typer.Option(
+        False, "--sort-keys", help="Sort payload JSON keys alphabetically."
+    ),
 ) -> None:
-    parsed = parse_compact_jwt(token)
-    default_header = json_dumps(parsed.header)
+    if token:
+        parsed = parse_compact_jwt(token)
+        default_header = json_dumps(parsed.header)
 
-    if isinstance(parsed.payload, Mapping):
-        default_payload = json_dumps(parsed.payload)
-    elif isinstance(parsed.payload, bytes):
-        default_payload = f"b64:{base64url_encode(parsed.payload)}"
+        if isinstance(parsed.payload, Mapping):
+            default_payload = json_dumps(parsed.payload)
+        elif isinstance(parsed.payload, bytes):
+            default_payload = f"b64:{base64url_encode(parsed.payload)}"
+        else:
+            default_payload = str(parsed.payload)
     else:
-        default_payload = str(parsed.payload)
+        parsed = None
+        default_header = _DEFAULT_HEADER
+        default_payload = _DEFAULT_PAYLOAD
 
     header_input = header or _prompt_json("Header JSON", default_header)
     payload_input = payload or _prompt_json("Payload JSON", default_payload)
@@ -57,8 +69,8 @@ def edit_command(
     new_header = _parse_header_input(header_input)
     new_payload = _parse_payload_input(payload_input)
 
-    normalized = normalize_header_payload(new_header, new_payload)
-    if keep_signature and parsed.parts.signature_b64:
+    normalized = normalize_header_payload(new_header, new_payload, sort_keys=sort_keys)
+    if keep_signature and parsed and parsed.parts.signature_b64:
         typer.echo(
             f"{normalized.header_b64}.{normalized.payload_b64}.{parsed.parts.signature_b64}"
         )

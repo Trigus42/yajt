@@ -2,12 +2,21 @@
 
 from __future__ import annotations
 
+import base64
 import json
 from typing import Any, Mapping
 
 from jwcrypto.jwk import JWK
 
 from ..models.keys import KeyMaterial, KeyType, KeyUse
+
+
+def jwk_from_secret(secret: bytes | str) -> JWK:
+    """Create an oct JWK from raw HMAC key material."""
+    if isinstance(secret, str):
+        secret = secret.encode("utf-8")
+    k = base64.urlsafe_b64encode(secret).rstrip(b"=").decode("ascii")
+    return JWK(**{"kty": "oct", "k": k})
 
 
 def jwk_from_pem(

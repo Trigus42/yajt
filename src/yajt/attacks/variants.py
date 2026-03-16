@@ -22,6 +22,7 @@ def mutate_compact_token(
     payload_updates: Mapping[str, Any] | None = None,
     keep_signature: bool = False,
     drop_signature: bool = False,
+    sort_keys: bool = False,
 ) -> str:
     parsed = parse_compact_jwt(token)
 
@@ -33,7 +34,7 @@ def mutate_compact_token(
     if payload_updates:
         payload = _merge_mapping(parsed.payload, payload_updates)
 
-    normalized = normalize_header_payload(header, payload)
+    normalized = normalize_header_payload(header, payload, sort_keys=sort_keys)
     signature_b64 = None
 
     if keep_signature and parsed.parts.signature_b64:

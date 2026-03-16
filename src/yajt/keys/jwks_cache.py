@@ -48,7 +48,7 @@ def jwks_from_json(jwks_data: str | Mapping[str, Any]) -> JWKSet:
 
 def jwks_kids(jwks: JWKSet) -> list[str]:
     kids: list[str] = []
-    for key in jwks.get_keys():
+    for key in jwks:
         data = key.export(as_dict=True)
         kid = data.get("kid")
         if isinstance(kid, str):
@@ -58,7 +58,7 @@ def jwks_kids(jwks: JWKSet) -> list[str]:
 
 def jwks_validate(jwks: JWKSet) -> list[str]:
     warnings: list[str] = []
-    keys = jwks.get_keys()
+    keys = list(jwks)
     if not keys:
         warnings.append("JWKS has no keys")
         return warnings
@@ -131,5 +131,5 @@ def jwks_select_key(jwks: JWKSet, kid: str | None) -> JWK | None:
         except Exception:
             return None
 
-    keys = jwks.get_keys()
+    keys = list(jwks)
     return keys[0] if keys else None
